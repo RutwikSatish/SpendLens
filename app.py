@@ -830,10 +830,17 @@ with st.sidebar:
         uploaded = None
 
     st.markdown("---")
-    st.markdown("**Groq API Key** *(optional)*")
-    groq_key = st.text_input("", type="password",
-        placeholder="For AI-enriched actions",
-        help="Free at console.groq.com — enriches action descriptions with AI")
+    # Groq key read from Streamlit Secrets only
+    # Add to secrets: [groq] / api_key = "your_key"
+    groq_key = ""
+    try:
+        groq_key = st.secrets["groq"]["api_key"]
+        if groq_key and groq_key != "your_groq_api_key_here":
+            st.success("AI enrichment active", icon="◎")
+        else:
+            groq_key = ""
+    except Exception:
+        pass
 
     st.markdown("---")
     st.markdown("**Kraljic Thresholds**")
@@ -1182,18 +1189,16 @@ if st.session_state.get("analyzed"):
             margin=dict(l=40, r=20, t=20, b=50),
             height=400,
             xaxis=dict(
-                title="Profit Impact →",
+                title=dict(text="Profit Impact →", font=dict(family="IBM Plex Mono", size=10, color="#6b5f52")),
                 range=[0, 105],
                 gridcolor="rgba(200,191,176,0.3)",
                 tickfont=dict(family="IBM Plex Mono", size=9, color="#8a7f72"),
-                titlefont=dict(family="IBM Plex Mono", size=10, color="#6b5f52")
             ),
             yaxis=dict(
-                title="Supply Risk →",
+                title=dict(text="Supply Risk →", font=dict(family="IBM Plex Mono", size=10, color="#6b5f52")),
                 range=[0, 105],
                 gridcolor="rgba(200,191,176,0.3)",
                 tickfont=dict(family="IBM Plex Mono", size=9, color="#8a7f72"),
-                titlefont=dict(family="IBM Plex Mono", size=10, color="#6b5f52")
             ),
         )
         st.plotly_chart(fig_kq, use_container_width=True, config={"displayModeBar": False})
