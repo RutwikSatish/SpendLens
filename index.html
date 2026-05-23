@@ -159,7 +159,7 @@ body::after {
 /* ── Hero grid ── */
 .hero {
   display: grid;
-  grid-template-columns: 1fr 1px 1fr;
+  grid-template-columns: 1fr 1fr;
   border-bottom: 1px solid var(--rule);
   opacity: 0;
   transform: translateY(16px);
@@ -167,12 +167,14 @@ body::after {
 }
 
 .hero-left {
-  padding: 3rem 3rem 3rem 4rem;
+  padding: 3rem 2.5rem 3rem 4rem;
   border-right: 1px solid var(--rule);
+  min-width: 0;
 }
 
 .hero-right {
-  padding: 3rem 4rem 3rem 3rem;
+  padding: 3rem 3rem 3rem 2.5rem;
+  min-width: 0;
 }
 
 .section-tag {
@@ -326,6 +328,7 @@ body::after {
   background: var(--white);
   padding: 1.5rem;
   position: relative;
+  min-width: 0;
 }
 
 .step-num {
@@ -369,15 +372,15 @@ body::after {
 /* ── What you get ── */
 .outputs {
   display: grid;
-  grid-template-columns: 2fr 1px 1fr;
+  grid-template-columns: 2fr 1fr;
   border-bottom: 1px solid var(--rule);
   opacity: 0;
   transform: translateY(16px);
   animation: rise 0.7s ease 0.45s forwards;
 }
 
-.outputs-main { padding: 3rem 3rem 3rem 4rem; border-right: 1px solid var(--rule); }
-.outputs-side { padding: 3rem 4rem 3rem 3rem; }
+.outputs-main { padding: 3rem 2.5rem 3rem 4rem; border-right: 1px solid var(--rule); min-width: 0; }
+.outputs-side { padding: 3rem 2.5rem 3rem 2rem; min-width: 0; }
 
 .output-item {
   display: flex;
@@ -442,6 +445,8 @@ body::after {
   font-size: 13px;
   color: var(--slate);
   line-height: 1.5;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 .data-source:last-child { border-bottom: none; }
 .ds-name {
@@ -507,6 +512,7 @@ body::after {
   border: 1px solid #c8bfb0;
   border-radius: 2px;
   padding: 1.2rem;
+  min-width: 0;
 }
 .mock-sidebar-title {
   font-family: 'Libre Baskerville', serif;
@@ -671,7 +677,7 @@ footer {
   padding: 2rem 4rem;
   border-top: 2px solid var(--ink);
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: minmax(160px,1fr) minmax(180px,1fr) minmax(160px,1fr);
   gap: 2rem;
   font-family: var(--mono);
   font-size: 10px;
