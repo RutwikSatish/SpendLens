@@ -836,7 +836,7 @@ with st.sidebar:
     try:
         groq_key = st.secrets["groq"]["api_key"]
         if groq_key and groq_key != "your_groq_api_key_here":
-            st.success("AI enrichment active", icon="◎")
+            st.success("AI enrichment active", icon="🤖")
         else:
             groq_key = ""
     except Exception:
@@ -883,7 +883,50 @@ st.markdown('<div class="sl-divider"></div>', unsafe_allow_html=True)
 # ── Load data ─────────────────────────────────────────────────────────────────
 if use_sample:
     df_raw = load_sample_data()
-    st.info("◎ Sample dataset loaded — 300 PO lines, 12 categories, 1 manufacturing company. Toggle 'Use sample dataset' off to upload your own data.", icon="ℹ️")
+    st.info("Sample dataset loaded — 300 PO lines, 12 categories, 1 manufacturing company. Toggle off to upload your own.", icon="ℹ️")
+
+    with st.expander("◎  Preview sample data", expanded=False):
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Rows", f"{len(df_raw):,}")
+        c2.metric("Suppliers", df_raw["supplier_name"].nunique())
+        c3.metric("Categories", df_raw["category"].nunique())
+        c4.metric("Total Spend", f"${df_raw['amount'].sum():,.0f}")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:#8a7f72;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Column guide</div>', unsafe_allow_html=True)
+        for col, desc in [
+            ("po_number",              "Purchase order ID"),
+            ("supplier_name",          "Supplier / vendor name  ← required"),
+            ("line_item_description",  "Item description — used for UNSPSC auto-classification"),
+            ("category",               "Spend category (pre-assigned in sample)"),
+            ("amount",                 "PO line amount USD  ← required"),
+            ("preferred_supplier",     "Y / N — contracted supplier flag (enables SUM ratio)"),
+            ("country",                "Supplier country ISO-2 code"),
+        ]:
+            st.markdown(
+                f'<div style="display:flex;gap:16px;padding:5px 0;border-bottom:1px solid #eee8dc;">'
+                f'<code style="font-size:11px;color:#c85a2a;min-width:220px">{col}</code>'
+                f'<span style="font-size:12px;color:#6b5f52">{desc}</span></div>',
+                unsafe_allow_html=True
+            )
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:#8a7f72;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">First 10 rows</div>', unsafe_allow_html=True)
+        preview = df_raw.head(10).copy()
+        preview["amount"] = preview["amount"].apply(lambda x: f"${x:,.2f}")
+        st.dataframe(preview, use_container_width=True, hide_index=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown('<div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:#8a7f72;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">Spend by category</div>', unsafe_allow_html=True)
+        cat_prev = (
+            df_raw.groupby("category")["amount"]
+            .agg(["sum", "count"]).reset_index()
+            .rename(columns={"category": "Category", "sum": "Spend ($)", "count": "POs"})
+            .sort_values("Spend ($)", ascending=False)
+        )
+        cat_prev["Spend ($)"] = cat_prev["Spend ($)"].apply(lambda x: f"${x:,.0f}")
+        st.dataframe(cat_prev, use_container_width=True, hide_index=True)
+
 elif uploaded:
     try:
         df_raw = pd.read_csv(uploaded)
@@ -894,7 +937,7 @@ elif uploaded:
             st.stop()
         if "line_item_description" not in df_raw.columns:
             df_raw["line_item_description"] = "Unspecified"
-        st.success(f"◎ Loaded {len(df_raw):,} rows from {uploaded.name}", icon="✓")
+        st.success(f"◎ Loaded {len(df_raw):,} rows from {uploaded.name}", icon="✅")
     except Exception as e:
         st.error(f"Could not read file: {e}")
         st.stop()
@@ -1277,7 +1320,7 @@ if st.session_state.get("analyzed"):
                 icon="⚠️"
             )
         else:
-            st.success("◎ World-class SUM achieved (≥80%). Hackett Group benchmark: top quartile procurement functions.", icon="✓")
+            st.success("◎ World-class SUM achieved (≥80%). Hackett Group benchmark: top quartile procurement functions.", icon="✅")
 
         st.markdown('<div class="sl-footnote">SUM benchmark: Hackett Group 2024 Procurement Key Issues Study. World-class threshold: ≥80% spend through contracted/preferred suppliers.</div>', unsafe_allow_html=True)
         st.markdown('<div class="sl-divider"></div>', unsafe_allow_html=True)
