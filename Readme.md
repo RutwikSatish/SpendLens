@@ -96,34 +96,6 @@ country                | string  | ISO 2-letter country code (supplier country)
 
 ---
 
-## The Story — What to Say When You Present This
-
-> "Most procurement teams spend 2-3 days every quarter manually preparing the same four analyses — Pareto, Kraljic Matrix, spend taxonomy, and action recommendations — in Excel and PowerPoint.
->
-> SpendLens automates all four in 60 seconds from a standard ERP export. Every calculation is documented and tied to a published framework: the Pareto ABC methodology from Monczka and Handfield's textbook, the Kraljic Matrix from a 1983 Harvard Business Review paper that every CPO has read, UNSPSC taxonomy from the United Nations, and the Spend Under Management benchmark from the Hackett Group.
->
-> I built this because I completed SAP Ariba Procurement and Sourcing certifications, learned what category managers actually produce manually every quarter, and built a tool that does it automatically. When I ran it on public federal procurement data from USASpending.gov, it identified supplier consolidation opportunities across 12 categories in under a minute — analysis that would take a junior analyst two full days."
-
----
-
-## Who to Pitch This To
-
-### In interviews:
-- **Tesla:** Responsible Sourcing team at Palo Alto — they do exactly this kind of supplier portfolio analysis
-- **Amazon:** Global Procurement Operations L4 analyst roles — they value tools that reduce manual analyst work
-- **Accenture/Deloitte:** Supply chain practice — consultants charge $500K for what SpendLens does automatically
-
-### On LinkedIn:
-- Tag procurement professionals when you post about it
-- Share the Kraljic Matrix output screenshot — procurement directors will recognise it immediately
-- Use this headline: "Built a tool that automates Pareto ABC + Kraljic Matrix from any ERP PO export in 60 seconds"
-
-### At career fairs:
-- Lead with the problem: "How long does your team spend preparing quarterly spend analysis?"
-- Show the demo: upload sample data, click run, show the Kraljic chart
-- Show the source: "Every formula is from Monczka's textbook and Kraljic's 1983 HBR paper"
-
----
 
 ## References
 
@@ -135,6 +107,5 @@ country                | string  | ISO 2-letter country code (supplier country)
 
 ---
 
-**Built by Rutwik Satish** · MS Engineering Management, Northeastern University  
-SAP Ariba Procurement Certified · SAP Ariba Sourcing Certified · May 2026  
+**Built by Rutwik Satish** · MS Engineering Management, Northeastern University · May 2026  
 [linkedin.com/in/rutwiksatish](https://linkedin.com/in/rutwiksatish)
