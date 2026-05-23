@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SpendLens — Procurement Spend Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --paper:   #f4f0e8;
+  --warm:    #eee8dc;
+  --ink:     #1a1714;
+  --rust:    #c85a2a;
+  --slate:   #6b5f52;
+  --muted:   #8a7f72;
+  --rule:    #c8bfb0;
+  --white:   #fff;
+  --serif:   'Libre Baskerville', Georgia, serif;
+  --mono:    'IBM Plex Mono', monospace;
+  --sans:    'Barlow', sans-serif;
+  --cond:    'Barlow Condensed', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+/* ── Grain overlay ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.028'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── Top bar ── */
+.topbar {
+  background: var(--ink);
+  padding: 10px 4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+}
+.topbar a {
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.topbar a:hover { color: #fff; }
+
+/* ── Masthead ── */
+.masthead {
+  padding: 2rem 4rem 0;
+  border-bottom: 2px solid var(--ink);
+}
+
+.masthead-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.byline {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.8;
+}
+.byline a { color: var(--rust); text-decoration: none; }
+.byline a:hover { text-decoration: underline; }
+
+.issue-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  border: 1px solid var(--rule);
+  padding: 4px 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.nameplate {
+  text-align: center;
+  padding: 0 0 1.5rem;
+  position: relative;
+}
+
+.nameplate-rule {
+  height: 1px;
+  background: var(--rule);
+  margin-bottom: 1.5rem;
+}
+
+.nameplate h1 {
+  font-family: var(--cond);
+  font-size: clamp(64px, 11vw, 128px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+}
+
+.nameplate h1 span { color: var(--rust); }
+
+.nameplate-sub {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--muted);
+}
+
+.strip {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 9px 0;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  overflow: hidden;
+}
+
+.strip-inner {
+  display: flex;
+  gap: 0;
+  white-space: nowrap;
+}
+
+.strip-sep {
+  color: var(--rust);
+  margin: 0 1.2rem;
+  opacity: 0.7;
+}
+
+/* ── Hero grid ── */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  border-bottom: 1px solid var(--rule);
+  opacity: 0;
+  transform: translateY(16px);
+  animation: rise 0.7s ease 0.1s forwards;
+}
+
+.hero-left {
+  padding: 3rem 3rem 3rem 4rem;
+  border-right: 1px solid var(--rule);
+}
+
+.hero-right {
+  padding: 3rem 4rem 3rem 3rem;
+}
+
+.section-tag {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--rust);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-tag::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(200,90,42,0.3), transparent);
+}
+
+.hero-headline {
+  font-family: var(--serif);
+  font-size: clamp(24px, 3vw, 38px);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--ink);
+  margin-bottom: 1.25rem;
+}
+
+.hero-headline em {
+  font-style: italic;
+  color: var(--rust);
+}
+
+.hero-body {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--slate);
+  margin-bottom: 1.25rem;
+}
+
+.pull-quote {
+  border-left: 3px solid var(--rust);
+  padding: 0.8rem 1.2rem;
+  margin: 1.5rem 0;
+  background: rgba(200,90,42,0.04);
+}
+.pull-quote p {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  color: var(--ink);
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+.pull-quote cite {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-style: normal;
+}
+
+/* ── CTA button ── */
+.cta-btn {
+  display: inline-block;
+  background: var(--rust);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 14px 28px;
+  margin-top: 0.5rem;
+  transition: background 0.15s, transform 0.15s;
+}
+.cta-btn:hover {
+  background: #a84820;
+  transform: translateY(-2px);
+}
+.cta-btn-ghost {
+  display: inline-block;
+  border: 1px solid var(--rule);
+  color: var(--slate);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 13px 28px;
+  margin-top: 0.5rem;
+  margin-left: 8px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.cta-btn-ghost:hover {
+  border-color: var(--slate);
+  color: var(--ink);
+}
+
+/* ── Stat row ── */
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin-top: 2rem;
+}
+.stat {
+  background: var(--paper);
+  padding: 1rem 1.2rem;
+}
+.stat-num {
+  font-family: var(--cond);
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 3px;
+}
+.stat-num.rust { color: var(--rust); }
+.stat-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1.5;
+}
+
+/* ── How it works ── */
+.how {
+  padding: 3rem 4rem;
+  border-bottom: 1px solid var(--rule);
+  opacity: 0;
+  transform: translateY(16px);
+  animation: rise 0.7s ease 0.3s forwards;
+}
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  margin-top: 1.5rem;
+}
+
+.how-step {
+  background: var(--white);
+  padding: 1.5rem;
+  position: relative;
+}
+
+.step-num {
+  font-family: var(--cond);
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--rule);
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}
+
+.step-title {
+  font-family: var(--cond);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
+}
+
+.step-body {
+  font-size: 13px;
+  color: var(--slate);
+  line-height: 1.65;
+}
+
+.step-tag {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--rust);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid rgba(200,90,42,0.3);
+  padding: 2px 8px;
+  background: rgba(200,90,42,0.05);
+}
+
+/* ── What you get ── */
+.outputs {
+  display: grid;
+  grid-template-columns: 2fr 1px 1fr;
+  border-bottom: 1px solid var(--rule);
+  opacity: 0;
+  transform: translateY(16px);
+  animation: rise 0.7s ease 0.45s forwards;
+}
+
+.outputs-main { padding: 3rem 3rem 3rem 4rem; border-right: 1px solid var(--rule); }
+.outputs-side { padding: 3rem 4rem 3rem 3rem; }
+
+.output-item {
+  display: flex;
+  gap: 1.2rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--rule);
+  align-items: flex-start;
+}
+.output-item:last-child { border-bottom: none; }
+
+.output-num {
+  font-family: var(--cond);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--rule);
+  line-height: 1;
+  flex-shrink: 0;
+  width: 32px;
+}
+
+.output-content h4 {
+  font-family: var(--cond);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+
+.output-content p {
+  font-size: 13px;
+  color: var(--slate);
+  line-height: 1.55;
+}
+
+.output-content .ref {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 4px;
+  letter-spacing: 0.06em;
+}
+
+/* ── Side widgets ── */
+.widget { margin-bottom: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--rule); }
+.widget:last-child { border-bottom: none; margin-bottom: 0; }
+.widget-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.data-source {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13px;
+  color: var(--slate);
+  line-height: 1.5;
+}
+.data-source:last-child { border-bottom: none; }
+.ds-name {
+  font-family: var(--cond);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 1px;
+}
+.ds-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+}
+
+/* ── Screenshot preview ── */
+.preview-section {
+  background: var(--warm);
+  padding: 3rem 4rem;
+  border-bottom: 1px solid var(--rule);
+  opacity: 0;
+  animation: rise 0.7s ease 0.5s forwards;
+}
+
+.screenshot-frame {
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(26,23,20,0.12);
+  margin-top: 1.5rem;
+}
+
+.frame-bar {
+  background: var(--ink);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot.r { background: #ff5f57; }
+.dot.y { background: #ffbd2e; }
+.dot.g { background: #28c840; }
+.frame-url {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
+  margin-left: 8px;
+}
+
+.mockup {
+  background: #f4f0e8;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 2rem;
+  min-height: 360px;
+}
+
+.mock-sidebar {
+  background: #eee8dc;
+  border: 1px solid #c8bfb0;
+  border-radius: 2px;
+  padding: 1.2rem;
+}
+.mock-sidebar-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1714;
+  margin-bottom: 3px;
+}
+.mock-sidebar-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #8a7f72;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 1.2rem;
+}
+.mock-tag-green {
+  background: #d4f0d8;
+  color: #2a6a30;
+  border: 1px solid #aaddb0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  padding: 4px 10px;
+  border-radius: 2px;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+.mock-fw {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #8a7f72;
+  line-height: 2.2;
+}
+.mock-main {}
+.mock-hero-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #c85a2a;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.mock-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 42px;
+  font-weight: 800;
+  color: #1a1714;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.mock-title span { color: #c85a2a; }
+.mock-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.mock-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  border: 1px solid #c8bfb0;
+  color: #6b5f52;
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+.mock-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 1rem;
+}
+.mock-metric {
+  background: #fff;
+  border: 1px solid #ddd6cc;
+  border-radius: 2px;
+  padding: 10px 12px;
+  border-top: 3px solid #c8bfb0;
+}
+.mock-metric.accent { border-top-color: #c85a2a; }
+.mock-metric.green  { border-top-color: #3a7a4a; }
+.mock-metric-num {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1714;
+  line-height: 1;
+}
+.mock-metric-num.rust { color: #c85a2a; }
+.mock-metric-num.green { color: #3a7a4a; }
+.mock-metric-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  color: #8a7f72;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+/* ── Big CTA ── */
+.cta-section {
+  background: var(--ink);
+  padding: 4rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3rem;
+  align-items: center;
+  opacity: 0;
+  animation: rise 0.7s ease 0.6s forwards;
+}
+
+.cta-text h2 {
+  font-family: var(--cond);
+  font-size: clamp(28px, 4vw, 52px);
+  font-weight: 800;
+  color: var(--paper);
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  margin-bottom: 0.5rem;
+}
+.cta-text p {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 16px;
+  color: rgba(244,240,232,0.45);
+  line-height: 1.6;
+  max-width: 540px;
+}
+
+.cta-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.cta-main {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: var(--rust);
+  color: #fff;
+  text-decoration: none;
+  padding: 1.2rem 2.4rem;
+  font-family: var(--cond);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background 0.15s, transform 0.15s;
+  text-align: center;
+}
+.cta-main:hover { background: #a84820; transform: translateY(-2px); }
+.cta-main small {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  opacity: 0.7;
+  font-weight: 400;
+  text-transform: lowercase;
+}
+
+/* ── Footer ── */
+footer {
+  padding: 2rem 4rem;
+  border-top: 2px solid var(--ink);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2rem;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+footer a { color: var(--rust); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+.footer-name {
+  font-family: var(--cond);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 3px;
+}
+
+/* ── Animations ── */
+@keyframes rise {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .topbar   { padding: 8px 1.5rem; }
+  .masthead { padding: 1.5rem 1.5rem 0; }
+  .strip    { padding: 8px 1.5rem; font-size: 9px; }
+  .hero, .outputs { grid-template-columns: 1fr; }
+  .hero-left, .outputs-main { padding: 2rem 1.5rem; border-right: none; border-bottom: 1px solid var(--rule); }
+  .hero-right, .outputs-side { padding: 2rem 1.5rem; }
+  .how      { padding: 2rem 1.5rem; }
+  .how-grid { grid-template-columns: 1fr; }
+  .preview-section { padding: 2rem 1.5rem; }
+  .cta-section { grid-template-columns: 1fr; padding: 2rem 1.5rem; }
+  footer    { grid-template-columns: 1fr; padding: 2rem 1.5rem; gap: 1.5rem; }
+  .mockup   { grid-template-columns: 1fr; }
+  .mock-metrics { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ── -->
+<div class="topbar">
+  <span>spendlens.streamlit.app</span>
+  <span>Built by Rutwik Satish · MS Engineering Management, Northeastern · SAP Ariba Certified · 2026</span>
+</div>
+
+<!-- ── Masthead ── -->
+<header class="masthead">
+  <div class="masthead-top">
+    <div class="byline">
+      Rutwik Satish · MS Engineering Management<br>
+      Northeastern University, Boston · Graduated May 2026<br>
+      <a href="https://linkedin.com/in/rutwiksatish">linkedin.com/in/rutwiksatish</a>
+    </div>
+    <div style="text-align:right">
+      <div class="issue-badge">Procurement Intelligence Tool</div>
+      <div class="byline" style="margin-top:8px">SAP Ariba Procurement Certified<br>SAP Ariba Sourcing Certified · May 2026</div>
+    </div>
+  </div>
+
+  <div class="nameplate-rule"></div>
+
+  <div class="nameplate">
+    <h1>Spend<span>Lens</span></h1>
+    <div class="nameplate-sub">Procurement spend intelligence, built from first principles</div>
+  </div>
+
+  <div class="strip">
+    <div class="strip-inner">
+      Pareto / ABC Analysis
+      <span class="strip-sep">◎</span>
+      Kraljic Portfolio Matrix
+      <span class="strip-sep">◎</span>
+      UNSPSC Taxonomy
+      <span class="strip-sep">◎</span>
+      Supplier Concentration Ratio
+      <span class="strip-sep">◎</span>
+      Spend Under Management
+      <span class="strip-sep">◎</span>
+      SAP Ariba Compatible
+    </div>
+  </div>
+</header>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="section-tag">Why I built this</div>
+
+    <h2 class="hero-headline">
+      Procurement teams spend 2–3 days every quarter<br>
+      doing analysis that should take <em>60 seconds.</em>
+    </h2>
+
+    <p class="hero-body">
+      After completing SAP Ariba certifications and studying what category managers actually produce week to week, I noticed something. The core analyses — Pareto segmentation, Kraljic positioning, supplier concentration, spend taxonomy — are the same every time. The frameworks are 40 years old. The math is not complicated. But every team I researched was doing it manually in Excel and PowerPoint.
+    </p>
+
+    <p class="hero-body">
+      So I built SpendLens. Upload a PO export from any ERP system, and it runs all five analyses automatically. No setup, no integration, no IT department. Every formula is tied to a published source you can cite.
+    </p>
+
+    <div class="pull-quote">
+      <p>"Manual spend classification achieves only 70–80% accuracy and degrades over time as suppliers and categories change."</p>
+      <cite>Suplari Spend Analysis Guide, 2026</cite>
+    </div>
+
+    <a href="https://spendlens.streamlit.app/" target="_blank" class="cta-btn">Open SpendLens →</a>
+    <a href="https://github.com/rutwiksatish/spendlens" target="_blank" class="cta-btn-ghost">View Source</a>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num rust">5</div>
+        <div class="stat-label">Analytical outputs from one CSV upload</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">60s</div>
+        <div class="stat-label">vs 2–3 days manually in Excel</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">$0</div>
+        <div class="stat-label">vs $50K+ annual cost of Ariba or Coupa</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num rust">5</div>
+        <div class="stat-label">Published frameworks behind every number</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="section-tag">The actual problem</div>
+
+    <p class="hero-body">
+      Every procurement team I read about faces the same Monday morning situation. They export PO data from SAP, Oracle, or whatever ERP they run. The file has inconsistent supplier names, uncategorised rows, and no strategic structure. Someone spends three days cleaning it. By Thursday they have a Pareto chart. Leadership gets a slide that says "we should consolidate suppliers." Nothing changes.
+    </p>
+
+    <p class="hero-body">
+      The tools that solve this properly — Coupa, SAP Ariba, Suplari — cost anywhere from $30,000 to $500,000 a year and take months to implement. A 50-person manufacturer or a mid-size distributor cannot justify that. They stay in Excel.
+    </p>
+
+    <p class="hero-body">
+      SpendLens is not trying to replace those platforms. It is the analysis layer that any team can use today, before they have the budget for enterprise software — or to check the work of the software they already have.
+    </p>
+
+    <div class="section-tag" style="margin-top:2rem">The gap SpendLens fills</div>
+
+    <div style="display:grid;gap:8px;margin-top:0.5rem">
+      <div style="background:#fff;border:1px solid #ddd6cc;border-left:3px solid #c85a2a;padding:10px 14px;font-size:13px;color:#6b5f52;line-height:1.5">
+        <strong style="color:#1a1714;display:block;margin-bottom:2px">SAP Ariba / Coupa</strong>
+        Enterprise-grade, $50K+/yr, 3–6 month implementation, requires IT
+      </div>
+      <div style="background:#fff;border:1px solid #ddd6cc;border-left:3px solid #8a7f72;padding:10px 14px;font-size:13px;color:#6b5f52;line-height:1.5">
+        <strong style="color:#1a1714;display:block;margin-bottom:2px">Manual Excel analysis</strong>
+        Free, but 70–80% accuracy, 2–3 days of work, no frameworks applied
+      </div>
+      <div style="background:#fff;border:1px solid rgba(200,90,42,0.4);border-left:3px solid #c85a2a;padding:10px 14px;font-size:13px;color:#6b5f52;line-height:1.5">
+        <strong style="color:#c85a2a;display:block;margin-bottom:2px">SpendLens</strong>
+        Free, 60-second setup, framework-grounded, any CSV from any ERP
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How it works ── -->
+<section class="how fade-in">
+  <div class="section-tag">How it works</div>
+
+  <div class="how-grid">
+    <div class="how-step">
+      <div class="step-num">01</div>
+      <div class="step-title">Upload your PO export</div>
+      <p class="step-body">Export purchase orders from SAP, Oracle, or any ERP as a CSV. You only need two columns to start: supplier name and amount. SpendLens handles the rest. There is no login, no integration, no IT ticket.</p>
+      <span class="step-tag">Any ERP · 2 columns minimum</span>
+    </div>
+    <div class="how-step">
+      <div class="step-num">02</div>
+      <div class="step-title">Automatic classification</div>
+      <p class="step-body">Every line item gets classified against the UNSPSC taxonomy — the same standard that SAP Ariba and Oracle use globally. Suppliers get segmented into Class A, B, and C using the Pareto method from Monczka and Handfield's textbook.</p>
+      <span class="step-tag">UNSPSC v24 · Pareto ABC</span>
+    </div>
+    <div class="how-step">
+      <div class="step-num">03</div>
+      <div class="step-title">Kraljic positioning</div>
+      <p class="step-body">Each spend category gets placed on the Kraljic Matrix automatically — Strategic, Leverage, Bottleneck, or Non-critical. This is the framework every CPO has read. SpendLens is the first free tool that does this from raw PO data.</p>
+      <span class="step-tag">Kraljic 1983 · HBR</span>
+    </div>
+    <div class="how-step">
+      <div class="step-num">04</div>
+      <div class="step-title">Concentration ratio</div>
+      <p class="step-body">For every category, the tool calculates CR-3: the share of spend captured by the top 3 suppliers. When CR-3 drops below 70%, the category is fragmented — you have too many suppliers and no leverage. That is an immediate consolidation opportunity.</p>
+      <span class="step-tag">CR-n · Industrial Organisation</span>
+    </div>
+    <div class="how-step">
+      <div class="step-num">05</div>
+      <div class="step-title">Spend under management</div>
+      <p class="step-body">If your data includes a preferred supplier flag, SpendLens calculates what percentage of your spend is going through contracted suppliers. The Hackett Group's world-class benchmark is 80%. Most organisations are at 50–65%.</p>
+      <span class="step-tag">SUM · Hackett Group 2024</span>
+    </div>
+    <div class="how-step">
+      <div class="step-num">06</div>
+      <div class="step-title">Prioritised actions</div>
+      <p class="step-body">The tool generates a ranked list of sourcing actions — consolidate tail spend here, run a competitive RFQ there, qualify an alternate supplier for that bottleneck category. Each action references the framework behind it and the SAP Ariba module that executes it.</p>
+      <span class="step-tag">Monczka et al. · SAP Ariba</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── App preview mockup ── -->
+<section class="preview-section fade-in">
+  <div class="section-tag">What it looks like</div>
+
+  <div class="screenshot-frame">
+    <div class="frame-bar">
+      <div class="dot r"></div>
+      <div class="dot y"></div>
+      <div class="dot g"></div>
+      <div class="frame-url">spendlens.streamlit.app</div>
+    </div>
+    <div class="mockup">
+      <div class="mock-sidebar">
+        <div class="mock-sidebar-title">SpendLens</div>
+        <div class="mock-sidebar-sub">Procurement Intelligence</div>
+        <div class="mock-tag-green">🤖 AI enrichment active</div>
+        <div class="mock-fw">
+          Frameworks:<br>
+          UNSPSC v24 (UNDP)<br>
+          Pareto/ABC — Monczka et al.<br>
+          Kraljic Matrix — HBR (1983)<br>
+          CR-n — Industrial Organisation<br>
+          SUM — Hackett Group (2024)
+        </div>
+      </div>
+      <div class="mock-main">
+        <div class="mock-hero-sub">◎ Procurement Spend Intelligence Platform</div>
+        <div class="mock-title">Spend<span>Lens</span></div>
+        <div class="mock-tags">
+          <span class="mock-tag">◎ Kraljic Matrix</span>
+          <span class="mock-tag">◎ Pareto / ABC</span>
+          <span class="mock-tag">◎ UNSPSC Taxonomy</span>
+          <span class="mock-tag">◎ Concentration Ratio</span>
+          <span class="mock-tag">◎ Spend Under Management</span>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#8a7f72;margin-bottom:8px">Analysis complete — 278 transactions · 50 suppliers · 12 categories</div>
+        <div class="mock-metrics">
+          <div class="mock-metric accent">
+            <div class="mock-metric-num rust">$0.9M</div>
+            <div class="mock-metric-label">Total Spend</div>
+          </div>
+          <div class="mock-metric">
+            <div class="mock-metric-num">50</div>
+            <div class="mock-metric-label">Active Suppliers</div>
+          </div>
+          <div class="mock-metric">
+            <div class="mock-metric-num" style="color:#c8960a">17</div>
+            <div class="mock-metric-label">Class A Suppliers</div>
+          </div>
+          <div class="mock-metric green">
+            <div class="mock-metric-num green">84.3%</div>
+            <div class="mock-metric-label">Spend Under Mgmt</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:10px;text-align:center;letter-spacing:0.06em;font-style:italic">
+    Live demo — sample dataset pre-loaded, no upload required
+  </p>
+</section>
+
+<!-- ── Outputs detail ── -->
+<section class="outputs fade-in">
+  <div class="outputs-main">
+    <div class="section-tag">The five outputs</div>
+
+    <div class="output-item">
+      <div class="output-num">1</div>
+      <div class="output-content">
+        <h4>Pareto / ABC Segmentation</h4>
+        <p>Splits suppliers into three classes — A (top 20% of suppliers accounting for 80% of spend), B (next 30%, 15% of spend), C (tail spend). The Pareto chart shows where your money actually goes.</p>
+        <div class="ref">Monczka, Handfield et al. (2019) Purchasing and Supply Chain Management, 7th Ed., Ch.6</div>
+      </div>
+    </div>
+
+    <div class="output-item">
+      <div class="output-num">2</div>
+      <div class="output-content">
+        <h4>UNSPSC Taxonomy Classification</h4>
+        <p>Every line item description gets classified into UNSPSC Level-1 Segments — the global standard used by SAP Ariba, Oracle, and the UN. No manual tagging required.</p>
+        <div class="ref">UNSPSC v24.0301 — United Nations Development Programme / GS1</div>
+      </div>
+    </div>
+
+    <div class="output-item">
+      <div class="output-num">3</div>
+      <div class="output-content">
+        <h4>Supplier Concentration Ratio (CR-3)</h4>
+        <p>For each category, the tool calculates what percentage of spend goes to the top 3 suppliers. Below 70% means fragmentation — you are splitting spend across too many vendors and getting no price leverage from any of them.</p>
+        <div class="ref">Standard industrial organisation economics — applied to procurement portfolio management</div>
+      </div>
+    </div>
+
+    <div class="output-item">
+      <div class="output-num">4</div>
+      <div class="output-content">
+        <h4>Kraljic Portfolio Matrix</h4>
+        <p>Every spend category is automatically placed in one of four quadrants: Strategic, Leverage, Bottleneck, or Non-critical. Each quadrant comes with a recommended sourcing strategy. This is the analysis that used to take most of the three days.</p>
+        <div class="ref">Kraljic, P. (1983). Purchasing must become supply management. Harvard Business Review, 61(5), 109–117.</div>
+      </div>
+    </div>
+
+    <div class="output-item">
+      <div class="output-num">5</div>
+      <div class="output-content">
+        <h4>Spend Under Management Ratio</h4>
+        <p>If your data has a preferred supplier flag, SpendLens tells you what percentage of spend flows through contracted, approved vendors — and how far you are from the 80% world-class benchmark. The unmanaged portion is your maverick spend problem.</p>
+        <div class="ref">Hackett Group (2024) Procurement Key Issues Study — 80% SUM = top quartile procurement function</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="outputs-side">
+    <div class="widget">
+      <div class="widget-title">Data sources</div>
+      <div class="data-source">
+        <div class="ds-name">World Bank WGI 2024</div>
+        <div class="ds-badge">Free · Public domain</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">Country governance indicators — used for supplier risk scoring in advanced mode</div>
+      </div>
+      <div class="data-source">
+        <div class="ds-name">UNSPSC v24 (UNDP)</div>
+        <div class="ds-badge">Free · UN standard</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">Global taxonomy — same standard used by SAP Ariba and Oracle</div>
+      </div>
+      <div class="data-source">
+        <div class="ds-name">Your own PO export</div>
+        <div class="ds-badge">CSV · Any ERP</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">SAP, Oracle, NetSuite, Dynamics, QuickBooks — two columns minimum</div>
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">References</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);line-height:2">
+        Kraljic (1983) · HBR 61(5)<br>
+        Monczka et al. (2019) · Cengage<br>
+        UNSPSC v24 · UNDP / GS1<br>
+        Hackett Group (2024)<br>
+        Suplari Spend Analysis Guide<br>
+        ISM CPSM Body of Knowledge
+      </div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">Built by</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--muted);line-height:2">
+        <strong style="color:var(--ink);font-size:12px;">Rutwik Satish</strong><br>
+        MS Engineering Management<br>
+        Supply Chain Track · GPA 3.7<br>
+        Northeastern University<br>
+        Graduated May 2026<br><br>
+        SAP Ariba Procurement ✓<br>
+        SAP Ariba Sourcing ✓<br>
+        Lean Six Sigma Green Belt<br>
+        Celonis Process Mining<br>
+        CSCMP Demand Planning<br><br>
+        <a href="https://linkedin.com/in/rutwiksatish" style="color:var(--rust)">LinkedIn</a> ·
+        <a href="https://github.com/rutwiksatish" style="color:var(--rust)">GitHub</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Big CTA ── -->
+<section class="cta-section">
+  <div class="cta-text">
+    <h2>Try it yourself.</h2>
+    <p>
+      Demo data is pre-loaded — 278 purchase orders across 12 categories and 50 suppliers. Click Run Spend Analysis and you will see the full output in under 10 seconds. No login, no signup, no credit card.
+    </p>
+  </div>
+  <div class="cta-action">
+    <a href="https://spendlens.streamlit.app/" target="_blank" class="cta-main">
+      Open SpendLens
+      <small>spendlens.streamlit.app</small>
+    </a>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer>
+  <div>
+    <div class="footer-name">SpendLens</div>
+    Procurement Spend Intelligence<br>
+    Built May 2026<br>
+    <a href="https://spendlens.streamlit.app/">spendlens.streamlit.app</a>
+  </div>
+  <div>
+    Frameworks applied<br>
+    Pareto/ABC · Monczka et al. 2019<br>
+    Kraljic Matrix · HBR 1983<br>
+    UNSPSC v24 · UNDP / GS1<br>
+    SUM · Hackett Group 2024
+  </div>
+  <div>
+    Rutwik Satish<br>
+    MS Engineering Management<br>
+    Northeastern University · 2026<br>
+    <a href="https://linkedin.com/in/rutwiksatish">LinkedIn</a> ·
+    <a href="https://github.com/rutwiksatish">GitHub</a>
+  </div>
+</footer>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
